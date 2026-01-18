@@ -11,28 +11,35 @@ import { AuthContext } from "../context/AuthContext";
 
 const schema = yup.object().shape({
   phone: yup.string().required("Phone is required"),
-  password: yup.string().required("Password is required").min(6, "Password too short"),
+  password: yup
+    .string()
+    .required("Password is required")
+    .min(6, "Password too short"),
 });
 
 export default function Login() {
   const navigate = useNavigate();
+  const { setAuth, setUser } = useContext(AuthContext);
 
-  // ✅ Only ONE setAuth here
-  const { setAuth } = useContext(AuthContext);
-
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
     resolver: yupResolver(schema),
   });
 
   const onSubmit = async (data) => {
     try {
-      await API.post("/auth/login", data); // cookie returned
+      const res = await API.post("/auth/login", data);
 
-      setAuth(res.data.user);
+      setAuth(true);
+      setUser(res.data.user);
 
       toast.success("Welcome back!");
       navigate("/dashboard");
     } catch (err) {
+      console.error(err);
       toast.error(err.response?.data?.msg || "Login failed");
     }
   };
@@ -58,7 +65,9 @@ export default function Login() {
             {...register("phone")}
             className="w-full bg-[#1a1a1a] border border-[#333] text-white px-3 py-2 rounded focus:outline-none focus:ring focus:ring-blue-600"
           />
-          <p className="text-red-400 text-sm mt-1">{errors.phone?.message}</p>
+          <p className="text-red-400 text-sm mt-1">
+            {errors.phone?.message}
+          </p>
         </div>
 
         <div className="mb-5">
@@ -68,7 +77,9 @@ export default function Login() {
             {...register("password")}
             className="w-full bg-[#1a1a1a] border border-[#333] text-white px-3 py-2 rounded focus:outline-none focus:ring focus:ring-blue-600"
           />
-          <p className="text-red-400 text-sm mt-1">{errors.password?.message}</p>
+          <p className="text-red-400 text-sm mt-1">
+            {errors.password?.message}
+          </p>
         </div>
 
         <button
@@ -79,7 +90,7 @@ export default function Login() {
         </button>
 
         <p className="mt-4 text-center text-sm text-gray-400">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link to="/register" className="text-blue-500 hover:underline">
             Register
           </Link>

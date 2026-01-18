@@ -4,17 +4,27 @@ import API from "../api/axios";
 export const AuthContext = createContext();
 
 export default function AuthProvider({ children }) {
-  const [auth, setAuth] = useState(null);  
-  // null = checking, false = logged out, object = logged in user
+  const [auth, setAuth] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     API.get("/auth/me")
-      .then(res => setAuth(res.data.user))  // store full user object
-      .catch(() => setAuth(false));
+      .then(res => {
+        setUser(res.data.user);
+        setAuth(true);
+      })
+      .catch(() => {
+        setUser(null);
+        setAuth(false);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   return (
-    <AuthContext.Provider value={{ auth, setAuth }}>
+    <AuthContext.Provider
+      value={{ auth, user, setAuth, setUser, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );
